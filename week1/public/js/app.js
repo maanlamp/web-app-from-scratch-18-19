@@ -29,14 +29,14 @@ async function getAll (endpoint, options) {
 		"user-agent": "snoopr/0.1" //User-agent is required for more lenient throttling
 	};
 
-	const {count, chunkSize} = await fetch(createURL(`${APIURL}/${endpoint}`, options), headers)
+	const {count, chunkSize: batchSize} = await fetch(createURL(`${APIURL}/${endpoint}`, options), headers)
 		.then(res => res.json())
 		.then(json => ({
 			count: json.count,
 			chunkSize: json[`${endpoint}s`].length}))
 		.catch(err => console.error("Failed to retrieve required request count.", err));
 
-	const batches = Math.ceil(count / chunkSize);
+	const batches = Math.ceil(count / batchSize);
 	const msRequestPadding = 1000; //I seem to get throttled even with all the precautions :(
 
 	console.log(`Retrieving ${count} items in ${batches} batches. Will take ~${msRequestPadding * batches / 1000}s.`);
@@ -47,7 +47,7 @@ async function getAll (endpoint, options) {
 			.then(() => fetch(
 				createURL(
 					`${APIURL}/${endpoint}`,
-					Object.assign({offset: i * chunkSize}, options)),
+					Object.assign({offset: i * batchSize}, options)),
 				headers)))
 		.then(responses => responses
 			.mapAsync(res => res.json())
@@ -61,7 +61,7 @@ async function getAll (endpoint, options) {
 
 const input = document.querySelector("input");
 function scaleInput () {
-	input.style.width = `${Math.max(1, input.value.length)}ch`;
+	input.style.setProperty("--contentWidth", `${Math.max(1, input.value.length)}ch`);
 }
 scaleInput();
 input.addEventListener("input", scaleInput);

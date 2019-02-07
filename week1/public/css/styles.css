@@ -28,7 +28,7 @@ main>h1>form>input {
 	text-align: start;
 	border: none;
 	background: none;
-	width: auto;
+	width: var(--contentWidth);
 	border-bottom: 2px solid rgba(0, 0, 0, .25);
 	outline: none;
 	transition: color .2s ease, width .1s ease;
