@@ -32,8 +32,12 @@ main>h1>form>input {
 	border-bottom: 2px solid rgba(0, 0, 0, .25);
 	outline: none;
 	transition: color .2s ease, width .1s ease;
+	padding: 0 .25rem;
+	margin: 0 -.25rem;
+} main>h1>form>input:hover {
+	border-color: rgb(141, 163, 238);
 } main>h1>form>input:focus {
-	border-color: blue;
+	border-color: rgb(72, 112, 241);
 }
 
 .list-item {

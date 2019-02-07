@@ -1,12 +1,5 @@
 const main = document.querySelector("main");
-const endpoint = "https://musicbrainz.org/ws/2";
-
-Object.defineProperty(String.prototype, "lastChar", {
-	value: function lastChar (count = 1) {
-		return this.slice(-count);
-	},
-	configurable: false
-});
+const APIURL = "https://musicbrainz.org/ws/2";
 
 function createURL (baseURL, options) {
 	const URLOptions = Object.entries(options)
@@ -16,21 +9,52 @@ function createURL (baseURL, options) {
 	return `${baseURL}?${URLOptions}`;
 }
 
-async function getAll (thing, options) {
-	const results = [];
-	let maxResults = Infinity;
+function range(count) {
+	return Array.apply(null, Array(count)); // Weird way of getting dense array filled with undefined
+}
 
-	while (results.length < maxResults) {
-		await fetch(createURL(`${endpoint}/${thing}`, options))
-			.then(response => response.json())
-			.then(json => {
-				maxResults = json.count;
-				results.push(...json.artists);
-			})
-			.catch(err => {throw err});
+function timeout (ms) {
+	return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+Object.defineProperty(Array.prototype, "mapAsync", {
+	value: function mapAsync (callback) {
+		return Promise.all(this.map(callback));
 	}
-	
-	return results;
+});
+
+async function getAll (endpoint, options) {
+	const headers = {
+		mode: "cors",
+		"user-agent": "snoopr/0.1" //User-agent is required for more lenient throttling
+	};
+
+	const {count, chunkSize} = await fetch(createURL(`${APIURL}/${endpoint}`, options), headers)
+		.then(res => res.json())
+		.then(json => ({
+			count: json.count,
+			chunkSize: json[`${endpoint}s`].length}))
+		.catch(err => console.error("Failed to retrieve required request count.", err));
+
+	const batches = Math.ceil(count / chunkSize);
+	const msRequestPadding = 1000; //I seem to get throttled even with all the precautions :(
+
+	console.log(`Retrieving ${count} items in ${batches} batches. Will take ~${msRequestPadding * batches / 1000}s.`);
+	await timeout(50); //Precautionary timeout to not get throttled
+
+	return range(batches)
+		.mapAsync((_, i) => timeout(i * msRequestPadding) //API allows ~50 reqs/sec (~=20ms/req) if you comply to their throttling guidelines
+			.then(() => fetch(
+				createURL(
+					`${APIURL}/${endpoint}`,
+					Object.assign({offset: i * chunkSize}, options)),
+				headers)))
+		.then(responses => responses
+			.mapAsync(res => res.json())
+			.then(jsons => jsons
+				.map(json => json[`${endpoint}s`])
+				.flat()))
+		.catch(console.error);
 }
 
 /* ---------------------- */
@@ -68,9 +92,9 @@ form.addEventListener("submit", async event => {
 	clearArtists();
 
 	const results = (await getAll("artist", options))
-		.filter(artist => artist.name.split(" ")[0].toLowerCase() === input.value.toLowerCase())
+		.filter(artist => artist.name.split(" ")[0].toLowerCase() === input.value.toLowerCase()) //Should filter by ID
 		.map(artist => artist.name)
-		.filter((name, i, source) => source.indexOf(name) === i);
+		.filter((name, i, source) => source.indexOf(name) === i); //deduplicate
 
 	results.forEach(name => {
 		const div = document.createElement("div");
