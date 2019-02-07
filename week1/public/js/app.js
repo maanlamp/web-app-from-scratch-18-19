@@ -47,7 +47,7 @@ function clearArtists () {
 	while (section.lastChild) section.lastChild.remove();
 }
 
-function isOfZijn (count) {
+function classifyNoun (count) {
 	return (count !== 1) ? "zijn" : "is";
 }
 
@@ -55,6 +55,8 @@ const form = document.querySelector("form");
 const count = document.querySelector("#count");
 form.addEventListener("submit", async event => {
 	event.preventDefault();
+
+	if (input.value === "") return;
 
 	count.innerText = "";
 
@@ -77,5 +79,5 @@ form.addEventListener("submit", async event => {
 		section.append(div);
 	});
 
-	count.innerText = `Dat ${isOfZijn(results.length)} er ${results.length}!`;
+	count.innerText = `Dat ${classifyNoun(results.length)} er ${results.length}!`;
 });
