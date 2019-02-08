@@ -1,7 +1,10 @@
 # Week 1 - Hello API 🐒
 
 ## Live demo
-O,o
+![Thumbnail](./public/images/thumb.png)
+https://webapp-from-scratch.netlify.com/
+
+Notice: Requests take SUUUUUPER long, have patience please :)
 
 ## What does this app do?
 This app lets you find out how many artists in the world have a name similar to your query.
