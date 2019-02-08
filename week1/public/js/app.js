@@ -1,5 +1,5 @@
 import getAll from "./modules/getAll.js";
-import {html, render} from "./modules/render.js";
+import {render} from "./modules/render.js";
 
 const input = document.querySelector("input");
 void function scaleInputOnInput () {

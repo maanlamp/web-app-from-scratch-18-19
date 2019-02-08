@@ -22,7 +22,11 @@ export function html (string, ...placeholders) {
 
 	const temp = document.createElement("div");
 	temp.innerHTML = raw;
-	return (temp.children.length > 1) ? temp.children : temp.lastChild;
+	const retVal = temp.removeChild(
+		(temp.children.length > 1)
+			? temp.children
+			: temp.lastChild);
+	return retVal;
 }
 
 export function render (container, rawHTML) {
