@@ -8,7 +8,7 @@ Object.defineProperty(String.prototype, "dedent", {
 	}
 });
 
-function html (string, ...placeholders) {
+export function html (string, ...placeholders) {
 	const chunks = [].concat(string);
 	const raw = chunks
 		.map((chunk, i) => {
@@ -25,6 +25,6 @@ function html (string, ...placeholders) {
 	return (temp.children.length > 1) ? temp.children : temp.lastChild;
 }
 
-function render (container, rawHTML) {
+export function render (container, rawHTML) {
 	container.append(html(rawHTML));
 }
