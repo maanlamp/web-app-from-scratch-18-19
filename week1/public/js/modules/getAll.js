@@ -28,11 +28,11 @@ export default async function getAll (endpoint, options) {
 		"user-agent": "snoopr/0.1" //User-agent is required for more lenient throttling
 	};
 
-	const {count, chunkSize: batchSize} = await fetch(createURL(`${APIURL}/${endpoint}`, options), headers)
+	const {count, batchSize} = await fetch(createURL(`${APIURL}/${endpoint}`, options), headers)
 		.then(res => res.json())
 		.then(json => ({
 			count: json.count,
-			chunkSize: json[`${endpoint}s`].length}))
+			batchSize: json[`${endpoint}s`].length}))
 		.catch(err => console.error("Failed to retrieve required request count.", err));
 
 	const batches = Math.ceil(count / batchSize);
