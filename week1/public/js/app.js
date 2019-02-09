@@ -1,8 +1,8 @@
 import getAll from "./modules/getAll.js";
 import {render} from "./modules/render.js";
 
-const input = document.querySelector("input");
 void function scaleInputOnInput () {
+	const input = document.querySelector("input");
 	function scale () {
 		input.style.setProperty("--contentWidth", `${Math.max(1, input.value.length)}ch`);
 	}
@@ -10,10 +10,11 @@ void function scaleInputOnInput () {
 	input.addEventListener("input", scale);
 }();
 
-const section = document.querySelector("#artists");
 function clearArtists () {
 	Array.from(
-		section.querySelectorAll("*"),
+		document
+			.querySelector("#artists")
+			.querySelectorAll("*"),
 		child => child.remove());
 }
 
@@ -21,32 +22,54 @@ function classifyNoun (count, single, plural) {
 	return (count === 1) ? single : plural;
 }
 
-function setInnerText (element, text) {
-	element.innerText = text;
+Object.defineProperty(HTMLElement.prototype, "setInnerText", {
+	value: function setInnerText (value) {
+		this.setInnerText = value;
+		return this;
+	}
+});
+
+function setInnerText (selection, text) {
+	((typeof selection === "string")
+		? document.querySelector(selection)
+		: selection
+	).innerText = text;
 }
 
-const form = document.querySelector("form");
-const count = document.querySelector("#count");
-form.addEventListener("submit", async event => {
-	event.preventDefault();
-	if (input.value === "") return;
-	setInnerText(count, "");
-	clearArtists();
+Object.defineProperty(Array.prototype, "deduplicate", {
+	value: function deduplicate () {
+		return [...new Set(this)];
+	}
+});
 
+async function renderArtists (event) {
+	event.preventDefault();
+	const input = document.querySelector("input");
 	const options = {
 		fmt: "json",
 		query: input.value
 	};
+
+	if (input.value === "") return;
+
+	setInnerText("#count", "");
+	clearArtists();
+
+	// Follow your own advice: use pure functions.
 	const names = (await getAll("artist", options))
-		.filter(artist => artist.name.split(" ")[0].toLowerCase() === input.value.toLowerCase()) //Should filter by ID
 		.map(artist => artist.name)
-		.filter((name, i, source) => source.indexOf(name) === i) //deduplicate
+		.deduplicate();
 
-	names.forEach(name => render(section, `
-		<div class="list-item">
-			${name}
-		</div>
-	`));
+	names.forEach(name => render(
+		document.querySelector("#artists"),
+		`
+			<div class="list-item">
+				${name}
+			</div>
+		`));
+	setInnerText("#count", `Dat ${classifyNoun(names.length, "is", "zijn")} er ${names.length}!`);
+}
 
-	setInnerText(count, `Dat ${classifyNoun(names.length, "is", "zijn")} er ${names.length}!`);
-});
+document
+	.querySelector("form")
+	.addEventListener("submit", renderArtists);

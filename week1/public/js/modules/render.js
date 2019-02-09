@@ -8,9 +8,23 @@ Object.defineProperty(String.prototype, "dedent", {
 	}
 });
 
+Object.defineProperty(HTMLElement.prototype, "detach", {
+	value: function detach () {
+		return (this.remove(),
+			this.cloneNode(true));
+	}
+});
+
+Object.defineProperty(HTMLElement.prototype, "setInnerHTML", {
+	value: function setInnerHTML (value) {
+		this.innerHTML = value;
+		return this;
+	}
+});
+
 export function html (string, ...placeholders) {
-	const chunks = [].concat(string);
-	const raw = chunks
+	const raw = Array()
+		.concat(string)
 		.map((chunk, i) => {
 			return (placeholders[i] !== undefined)
 				? chunk + placeholders[i]
@@ -20,13 +34,11 @@ export function html (string, ...placeholders) {
 		.dedent()
 		.trim();
 
-	const temp = document.createElement("div");
-	temp.innerHTML = raw;
-	const retVal = temp.removeChild(
-		(temp.children.length > 1)
-			? temp.children
-			: temp.lastChild);
-	return retVal;
+	return document
+		.createElement("div")
+		.setInnerHTML(raw)
+		.firstElementChild
+		.detach();
 }
 
 export function render (container, rawHTML) {
