@@ -1,5 +1,16 @@
 import getAll from "./modules/getAll.js";
-import {render} from "./modules/render.js";
+import { html, render } from "./modules/render.js";
+import { extend, arrayDeduplicate, HTMLElementSetInnerText } from "./modules/utility.js";
+window.html = html;
+
+extend({
+	"Array": {
+		deduplicate: arrayDeduplicate
+	},
+	"HTMLElement": {
+		setInnerText: HTMLElementSetInnerText
+	}
+});
 
 void function scaleInputOnInput () {
 	const input = document.querySelector("input");
@@ -22,29 +33,10 @@ function classifyNoun (count, single, plural) {
 	return (count === 1) ? single : plural;
 }
 
-Object.defineProperty(HTMLElement.prototype, "setInnerText", {
-	value: function setInnerText (value) {
-		this.setInnerText = value;
-		return this;
-	}
-});
-
-function setInnerText (selection, text) {
-	((typeof selection === "string")
-		? document.querySelector(selection)
-		: selection
-	).innerText = text;
-}
-
-Object.defineProperty(Array.prototype, "deduplicate", {
-	value: function deduplicate () {
-		return [...new Set(this)];
-	}
-});
-
 async function renderArtists (event) {
 	event.preventDefault();
 	const input = document.querySelector("input");
+	const count = document.querySelector("#count");
 	const options = {
 		fmt: "json",
 		query: input.value
@@ -52,7 +44,7 @@ async function renderArtists (event) {
 
 	if (input.value === "") return;
 
-	setInnerText("#count", "");
+	count.setInnerText("");
 	clearArtists();
 
 	// Follow your own advice: use pure functions.
@@ -67,7 +59,7 @@ async function renderArtists (event) {
 				${name}
 			</div>
 		`));
-	setInnerText("#count", `Dat ${classifyNoun(names.length, "is", "zijn")} er ${names.length}!`);
+	count.setInnerText(`Dat ${classifyNoun(names.length, "is", "zijn")} er ${names.length}!`);
 }
 
 document

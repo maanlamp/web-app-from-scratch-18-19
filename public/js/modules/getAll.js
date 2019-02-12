@@ -1,3 +1,5 @@
+import {extend, range, timeout, arrayMapAsync} from "./utility.js";
+
 const APIURL = "https://musicbrainz.org/ws/2";
 
 function createURL (baseURL, options) {
@@ -8,17 +10,9 @@ function createURL (baseURL, options) {
 	return `${baseURL}?${URLOptions}`;
 }
 
-function range(count) {
-	return Array.apply(null, Array(count)); // Weird way of getting dense array filled with undefined
-}
-
-function timeout (ms) {
-	return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-Object.defineProperty(Array.prototype, "mapAsync", {
-	value: function mapAsync (callback) {
-		return Promise.all(this.map(callback));
+extend({
+	"Array": {
+		mapAsync: arrayMapAsync
 	}
 });
 
