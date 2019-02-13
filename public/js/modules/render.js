@@ -1,14 +1,6 @@
-import {extend, stringDedent, HTMLElementDetach, HTMLElementSetInnerHTML} from "./utility.js";
-
-extend({
-	"String": {
-		dedent: stringDedent
-	},
-	"HTMLElement": {
-		detach: HTMLElementDetach,
-		setInnerHTML: HTMLElementSetInnerHTML
-	}
-});
+import Lexer from "./render/Lexer.js";
+import Parser from "./render/Parser.js";
+import Compiler from "./render/Compiler.js";
 
 function parseTemplateLiteral (string, placeholders) {
 	return Array()
@@ -19,44 +11,45 @@ function parseTemplateLiteral (string, placeholders) {
 				: chunk
 		})
 		.join("")
-		.dedent()
 		.trim();
 }
 
+const lexer = new Lexer();
+lexer
+	.ignore("whitespace", /[\r\f\v]+/)
+	.rule("newline", /\n/)
+	.rule("tab", new RegExp(`\\t| {${lexer.tabsize}}`))
+	.rule("space", / /)
+	.rule("tag", /\w+/)
+	.rule("content", /"[^"]*"/)
+	.rule("class", /\.\w+/)
+	.rule("id", /#\w+/)
+	.rule("attribute", /\[\w+(?:=.+?)?\]/);
+
+const parser = new Parser();
+const compiler = new Compiler();
+
 export function html (string, ...placeholders) {
 	const raw = parseTemplateLiteral(string, placeholders);
+	console.log(raw);
+	const tokens = lexer.lex(raw);
+	const ast = parser.parse(tokens, raw);
+	const html = compiler.compile(ast, raw);
 
-	return document
-		.createElement("div")
-		.setInnerHTML(raw)
-		.firstElementChild
-		.detach();
+	return html;
 }
 
-export function render (container, rawHTML) {
-	container.append(html(rawHTML));
+export function render (el, html) {
+	el.innerHTML = html;
 }
 
-/* Proposed template syntax
-html`
-body
-	main
-		h1
-			"Hoeveel artiesten op de wereld heten "
-			form
-				input[type=text][autofocus][placeholder=...]
-			"?"
-		h2#count
-		section#artists
-	footer
-		p.italic[class=a][data-custom-x=3] "idk lol"
-`
->
-<body>
-	<main>
-		<h1>Hoeveel artiesten op de wereld heten <form><input type="text" autofocus></form> ?</h1>
-		<h2 id="count"></h2>
-		<section id="artists"></section>
-	</main>
-</body>
-*/
+console.log(html`
+main
+	h1
+		"Hoeveel artiesten op de wereld heten "
+		form
+			input[type=text][autofocus]
+		"?"
+	h2#count
+	section#artists
+`);
