@@ -62,3 +62,20 @@ export function HTMLElementSetInnerText (value) {
 export function arrayDeduplicate () {
 	return [...new Set(this)];
 }
+
+export function arraySplit (array, separator) {
+	const chunks = [];
+	const splitHere = Symbol("Split here");
+	const arrWithDelimiters = array.map(item => {
+		if (typeof separator === "function" && separator(item)) return splitHere;
+		if (separator === item) return splitHere;
+		return item;
+	});
+	[splitHere, ...arrWithDelimiters]
+		.forEach(item => {
+			if (item === splitHere) return chunks.push([]);
+			chunks[chunks.length - 1].push(item);
+		});
+
+	return chunks;
+}

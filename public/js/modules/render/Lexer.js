@@ -1,48 +1,5 @@
-function arraySplit (array, separator) {
-	const chunks = [];
-	const splitHere = Symbol("Split here");
-	const arrWithDelimiters = array.map(item => {
-		if (typeof separator === "function" && separator(item)) return splitHere;
-		if (separator === item) return splitHere;
-		return item;
-	});
-	[splitHere, ...arrWithDelimiters]
-		.forEach(item => {
-			if (item === splitHere) return chunks.push([]);
-			chunks[chunks.length - 1].push(item);
-		});
-
-	return chunks;
-}
-
-class IndentStack {
-	constructor () {
-		this.stack = [0];
-	}
-
-	last () {
-		return this.stack[this.stack.length - 1];
-	}
-
-	push (values) {
-		this.stack.push(values);
-	}
-
-	pop () {
-		if (this.stack.length === 1) throw new Error("Do not pop the base indent level.");
-		return this.stack.pop();
-	}
-
-	contains (value) {
-		return this.stack.includes(value);
-	}
-
-	clear (foreach) {
-		while (this.stack.length > 1) {
-			foreach(this.pop());
-		}
-	}
-}
+import IndentStack from "./IndentStack.js";
+import {arraySplit} from "../utility.js";
 
 class LexicalToken {
 	constructor (type, lexeme = "", index = -1) {
@@ -144,7 +101,7 @@ export default class Lexer {
 	static validateIndentation (input, tokens) {
 		const indentStack = new IndentStack(0);
 		const lines = arraySplit(tokens, token => token.type === "newline")
-			.map(line => line.concat(new LexicalToken("newline"))) //Add back a newline, should make arraySplit allow inclusive splitting
+			.map(line => line.concat(new LexicalToken("newline"))) //Add back a newline, instaead I should make arraySplit allow inclusive splitting
 			.map(line => {
 				const currIndent = line.reduce((indent, token) => indent + (token.type === "tab"), 0);
 				if (currIndent > indentStack.last()) {
@@ -163,6 +120,6 @@ export default class Lexer {
 
 		return lines
 			.flat()
-			.filter(token => token.type !== "tab");
+			.filter(token => !["tab", "newline"].includes(token.type));
 	}
 }

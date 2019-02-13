@@ -1,14 +1,9 @@
-class AbstractSyntaxTree {
-	constructor () {
-		this.type = "program";
-		this.body = [];
-	}
-}
+import {TagNode, IdNode, ClassNode, AttributeNode, ContentNode} from "./Nodes.js";
 
-class Node {
-	constructor (parent = null, children = []) {
-		this.parent = parent;
-		this.children = children;
+class AbstractSyntaxTree {
+	constructor (type) {
+		this.type = type;
+		this.body = [];
 	}
 }
 
@@ -18,56 +13,71 @@ export default class Parser {
 		this.index = 0;
 	}
 
-	static getLineAndColumn (input, index) {
-		let i = 0;
-		let line = 1;
-		let column = 0;
-		while (i++ < index) {
-			if (input.charAt(i) === "\n") {
-				line++;
-				column = 0;
-			} else {
-				column++;
-			}
-		}
-		return {line, column};
+	step () {
+		this.index += 1;
 	}
 
-	static getErrorLine (input, index) {
-		return input
-		.substring(input
-			.substring(0, index)
-			.lastIndexOf("\n") + 1)
-		.replace(/\n[\s\S]*/, "")
-		.trim();
-	}
-
-	static handleError (message, input, index) {
-		const {line, column} = Parser.getLineAndColumn(input, index);
-		const errorLine = Parser.getErrorLine(input, index);
-		throw new Error(`
-			${message} at line ${line}, column ${column}.
-			${errorLine}
-			${" ".repeat(column)}^
-		`.trim().replace(/\t+/g, ""));
-	}
-
-	get currentToken () {
+	nextToken (tokens, index) {
+		this.step();
 		return this.tokens[this.index];
 	}
 
-	walk () {
-		//
-		this.index += 1;
-		return this.currentToken;
+	walk (tokens, index) { //implement functional approach instead of class state
+		let token = this.tokens[this.index];
+
+		if (token.type === "tag") {
+			const node = new TagNode(token);
+			token = this.nextToken(tokens, index);
+
+			while (["id", "class", "attribute"].includes(token.type)) {
+				node.attributes.push(this.walk(tokens, index));
+				token = this.nextToken(tokens, index);
+			}
+
+			//--------------FIX THIS SHIZZLE---------------
+			// if (token.type === "INDENT") {
+			// 	while (token.type !== "DEDENT") {
+			// 		node.children.push(this.walk(tokens, index));
+			// 		token = this.nextToken(tokens, index);
+			// 	}
+			// }
+			
+			this.step();
+			return node;
+		}
+
+		if (token.type === "id") {
+			this.step();
+			return new IdNode(token);
+		}
+
+		if (token.type === "class") {
+			this.step();
+			return new ClassNode(token);
+		}
+
+		if (token.type === "attribute") {
+			this.step();
+			return new AttributeNode(token);
+		}
+
+		if (token.type === "content") {
+			console.log();
+			this.step();
+			return new ContentNode(token);
+		}
+
+		//Parser.handleError(message, token);
+		console.log(this.tokens[this.index - 1]);
+		throw new Error(`SyntaxError ${token.type} '${token.lexeme}': at line ${token.line}, column ${token.column}.`);
 	}
 
 	parse (tokens, input) {
-		this.tokens = tokens;
 		console.log(tokens);
-		const ast = new AbstractSyntaxTree();
+		this.tokens = tokens;
+		const ast = new AbstractSyntaxTree("Document");
 
-		while (this.index < this.tokens.length) {this.walk()}
+		while (this.index < this.tokens.length) ast.body.push(this.walk());
 
 		return ast;
 	}
