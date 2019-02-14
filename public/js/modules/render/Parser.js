@@ -4,38 +4,43 @@ export default class Parser {
 	constructor () {
 		this.tokens = null;
 		this.index = 0;
+		this.callcount = 0;
 	}
 
-	step () {
+	step (err) {
 		this.index += 1;
 	}
 
-	nextToken (tokens, index) {
-		this.step();
+	peek () {
+		return this.tokens[this.index + 1];
+	}
+
+	nextTypeIs (expectedTypes) {
+		const nextToken = this.peek();
+		return [expectedTypes]
+			.flat()
+			.includes(nextToken.type);
+	}
+
+	eat () {
+		this.step("eat");
 		return this.tokens[this.index];
 	}
 
-	walk (tokens, index) { //implement functional approach instead of class state
+	gotCalled () {
+		this.callcount += 1;
+		if (this.callcount > 100) throw new Error("Maximum call stack size exceeded.");
+	}
+
+	walk () {
+		this.gotCalled();
 		let token = this.tokens[this.index];
+		console.log("walk", token, this.index);
 
 		if (token.type === "tag") {
 			const node = new TagNode(token);
-			token = this.nextToken(tokens, index);
 
-			while (["id", "class", "attribute"].includes(token.type)) {
-				console.log(`${node.tagname} > ${token.type}`)
-				node.attributes.push(this.walk(tokens, index));
-				token = this.nextToken(tokens, index);
-			}
-
-			//This shit's broke.
-			if (token.type === "INDENT") {
-				token = this.nextToken(tokens, index);
-				while (token.type !== "DEDENT") {
-					node.children.push(this.walk(tokens, index));
-					token = this.nextToken(tokens, index);
-				}
-			}
+			//add attributes and children.
 
 			this.step();
 			return node;
@@ -61,17 +66,17 @@ export default class Parser {
 			return new ContentNode(token);
 		}
 
+		if (token.type === "EOI") throw new Error("End of input reached.");
+
 		//Parser.handleError(message, token);
 		console.error("Preceding token:", this.tokens[this.index - 1]);
 		throw new Error(`SyntaxError ${token.type} '${token.lexeme}': at line ${token.line}, column ${token.column}.`);
 	}
 
-	parse (tokens, input) {
-		console.log(tokens);
+	parse (tokens) {
 		this.tokens = tokens;
 		const ast = new AbstractSyntaxTree("Document");
 
-		// debugger;
 		while (this.index < this.tokens.length) ast.body.push(this.walk());
 
 		return ast;

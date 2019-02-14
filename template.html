@@ -66,14 +66,7 @@
 </head>
 <body>
 	<textarea spellcheck="false">
-main
-	h1
-		"Hoeveel artiesten op de wereld heten "
-		form
-			input[type=text][autofocus]
-		"?"
-	h2#count
-	section#artists
+main#testid.testclass[testattribute]
 	</textarea>
 	<pre><code></code></pre>
 	<script>
@@ -122,18 +115,10 @@ main
 			}
 
 			//Fill pre>code with parsed content
-			code.innerHTML = html(txtarea.value)
-				.map(token => {
-					const getVal = val => `<div class="${typeof val}">${(typeof val === "string") ? `'${val}'` : val}</div>`;
-					const entries = Object.entries(token).map(([k, v]) => `\t${k}: ${getVal(v)}`);
-					return ["LexicalToken", `{\n${entries}\n}`];
-				})
-				.map(([type, value]) =>
-`<div class="collapsible" onclick="this.classList.toggle('hidden')">
-	<div class="type">${type}</div>
-	<div class="value">${value}</div>
-</div>`)
-				.join("");
+			setTimeout(() => {
+				code.innerHTML = JSON.stringify(html(txtarea.value), null, "│ ");
+				console.log("rendered");
+			}, 0);
 		});
 	</script>
 </body>

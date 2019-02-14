@@ -32,10 +32,9 @@ const compiler = new Compiler();
 export function html (string, ...placeholders) {
 	const raw = parseTemplateLiteral(string, placeholders);
 	const tokens = lexer.lex(raw);
-	// const ast = parser.parse(tokens, raw);
-	// const html = compiler.compile(ast, raw);
+	const ast = parser.parse(tokens);
+	const html = compiler.compile(ast);
 
-	return tokens;
 	return html;
 }
 window.html = html;
