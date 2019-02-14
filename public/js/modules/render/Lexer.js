@@ -50,8 +50,7 @@ export default class Lexer {
 		.substring(input
 			.substring(0, index)
 			.lastIndexOf("\n") + 1)
-		.replace(/\n[\s\S]*/, "")
-		.trim();
+		.replace(/\n[\s\S]*/, "");
 	}
 
 	static handleError (message, input, index) {

@@ -1,3 +1,10 @@
+export class AbstractSyntaxTree {
+	constructor (type) {
+		this.type = type;
+		this.body = [];
+	}
+}
+
 class Node {
 	constructor (type) {
 		this.type = type;

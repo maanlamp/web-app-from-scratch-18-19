@@ -1,11 +1,4 @@
-import {TagNode, IdNode, ClassNode, AttributeNode, ContentNode} from "./Nodes.js";
-
-class AbstractSyntaxTree {
-	constructor (type) {
-		this.type = type;
-		this.body = [];
-	}
-}
+import {AbstractSyntaxTree, TagNode, IdNode, ClassNode, AttributeNode, ContentNode} from "./AbstractSyntaxTree.js";
 
 export default class Parser {
 	constructor () {
@@ -30,18 +23,20 @@ export default class Parser {
 			token = this.nextToken(tokens, index);
 
 			while (["id", "class", "attribute"].includes(token.type)) {
+				console.log(`${node.tagname} > ${token.type}`)
 				node.attributes.push(this.walk(tokens, index));
 				token = this.nextToken(tokens, index);
 			}
 
-			//--------------FIX THIS SHIZZLE---------------
-			// if (token.type === "INDENT") {
-			// 	while (token.type !== "DEDENT") {
-			// 		node.children.push(this.walk(tokens, index));
-			// 		token = this.nextToken(tokens, index);
-			// 	}
-			// }
-			
+			//This shit's broke.
+			if (token.type === "INDENT") {
+				token = this.nextToken(tokens, index);
+				while (token.type !== "DEDENT") {
+					node.children.push(this.walk(tokens, index));
+					token = this.nextToken(tokens, index);
+				}
+			}
+
 			this.step();
 			return node;
 		}
@@ -62,13 +57,12 @@ export default class Parser {
 		}
 
 		if (token.type === "content") {
-			console.log();
 			this.step();
 			return new ContentNode(token);
 		}
 
 		//Parser.handleError(message, token);
-		console.log(this.tokens[this.index - 1]);
+		console.error("Preceding token:", this.tokens[this.index - 1]);
 		throw new Error(`SyntaxError ${token.type} '${token.lexeme}': at line ${token.line}, column ${token.column}.`);
 	}
 
@@ -77,6 +71,7 @@ export default class Parser {
 		this.tokens = tokens;
 		const ast = new AbstractSyntaxTree("Document");
 
+		// debugger;
 		while (this.index < this.tokens.length) ast.body.push(this.walk());
 
 		return ast;

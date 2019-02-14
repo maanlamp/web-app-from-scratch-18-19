@@ -31,25 +31,15 @@ const compiler = new Compiler();
 
 export function html (string, ...placeholders) {
 	const raw = parseTemplateLiteral(string, placeholders);
-	console.log(raw);
 	const tokens = lexer.lex(raw);
-	const ast = parser.parse(tokens, raw);
-	const html = compiler.compile(ast, raw);
+	// const ast = parser.parse(tokens, raw);
+	// const html = compiler.compile(ast, raw);
 
+	return tokens;
 	return html;
 }
+window.html = html;
 
 export function render (el, html) {
 	el.innerHTML = html;
 }
-
-console.log(html`
-main
-	h1
-		"Hoeveel artiesten op de wereld heten "
-		form
-			input[type=text][autofocus]
-		"?"
-	h2#count
-	section#artists
-`);

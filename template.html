@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<script src="./public/js/modules/render.js" type="module"></script>
+	<style>
+	* {
+		margin: 0;
+		padding: 0;
+		border: none;
+		outline: none;
+		font-size: 16px;
+	}
+	body {
+		display: flex;
+		height: 100vh;
+	}
+	textarea {
+		resize: none;
+	}
+	pre {
+		border-left: 2px solid rgba(255, 255, 255, .5);
+	}
+	textarea, pre {
+		padding: 1rem;
+		background-color: #0E0229;
+		flex: 1 1 50%;
+		color: white;
+		tab-size: 2;
+		overflow: auto;
+	}
+	div {
+		display: inline-block;
+		margin: 0;
+		padding: 0;
+	}
+	div.collapsible {
+		display: block;
+		cursor: pointer;
+		user-select: none;
+		border-radius: 1rem;
+		transition: transform .25s ease;
+	}
+	div.collapsible:hover {
+		font-weight: 900;
+		transform: translateX(8px);
+	}
+	div.collapsible>.value {
+		transition: height .25s ease;
+		overflow-y: hidden;
+		height: 4rem;
+	}
+	div.collapsible.hidden>.value {
+		height: 0;
+	}
+	.string {
+		color: yellow;
+	}
+	.number {
+		color: rgb(188, 31, 219);
+	}
+	</style>
+	<title>Document</title>
+</head>
+<body>
+	<textarea spellcheck="false">
+main
+	h1
+		"Hoeveel artiesten op de wereld heten "
+		form
+			input[type=text][autofocus]
+		"?"
+	h2#count
+	section#artists
+	</textarea>
+	<pre><code></code></pre>
+	<script>
+		function insertChartAt (char, src, pos) {
+			return src.substring(0, pos)
+				+ char
+				+ src.substring(pos);
+		}
+
+		function spliceCharAt (src, pos) {
+			return src.substring(0, pos)
+			 	+ src.substring(pos + 1);
+		}
+
+		function setCursorPos (element, pos) {
+			element.selectionStart = pos;
+			element.selectionEnd = pos;
+		}
+
+		const txtarea = document.querySelector("textarea");
+		const code = document.querySelector("code");
+		txtarea.value = txtarea.value.trim();
+		txtarea.addEventListener("keydown", event => {
+			if (event.key === "Tab") {
+				event.preventDefault();
+				const line = txtarea.value
+					.substring(txtarea
+						.value
+						.substring(0, txtarea.selectionStart)
+						.lastIndexOf("\n") + 1)
+					.replace(/\n[\s\S]*/, "");
+
+				if (!event.shiftKey) { //Indent
+					const cursorpos = txtarea.selectionStart;
+					txtarea.value = insertChartAt("\t", txtarea.value, cursorpos);
+					setCursorPos(txtarea, cursorpos + 1);
+				}
+				else if (line.charAt(0) === "\t") { //Dedent
+					const cursorpos = txtarea.selectionStart;
+					const lineStartPos = txtarea.value
+						.substring(0, txtarea.selectionStart)
+						.lastIndexOf("\n") + 1;
+					txtarea.value = spliceCharAt(txtarea.value, lineStartPos);
+					setCursorPos(txtarea, cursorpos - 1);
+				}
+			}
+
+			//Fill pre>code with parsed content
+			code.innerHTML = html(txtarea.value)
+				.map(token => {
+					const getVal = val => `<div class="${typeof val}">${(typeof val === "string") ? `'${val}'` : val}</div>`;
+					const entries = Object.entries(token).map(([k, v]) => `\t${k}: ${getVal(v)}`);
+					return ["LexicalToken", `{\n${entries}\n}`];
+				})
+				.map(([type, value]) =>
+`<div class="collapsible" onclick="this.classList.toggle('hidden')">
+	<div class="type">${type}</div>
+	<div class="value">${value}</div>
+</div>`)
+				.join("");
+		});
+	</script>
+</body>
+</html>
