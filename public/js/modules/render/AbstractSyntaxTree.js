@@ -11,6 +11,14 @@ class Node {
 	}
 }
 
+export class ExpressionNode extends Node {
+	constructor () {
+		super("expression");
+		this.parent = null;
+		this.children = [];
+	}
+}
+
 export class TagNode extends Node {
 	constructor (token) {
 		super("tag");

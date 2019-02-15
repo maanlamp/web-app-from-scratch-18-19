@@ -16,10 +16,9 @@ function parseTemplateLiteral (string, placeholders) {
 
 const lexer = new Lexer();
 lexer
-	.ignore("whitespace", /[\r\f\v]+/)
+	.ignore("whitespace", /[\r\f\v ]+/)
 	.rule("newline", /\n/)
 	.rule("tab", new RegExp(`\\t| {${lexer.tabsize}}`))
-	.rule("space", / /)
 	.rule("tag", /\w+/)
 	.rule("content", /"[^"]*"/)
 	.rule("class", /\.\w+/)
