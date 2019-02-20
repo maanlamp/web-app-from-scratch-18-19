@@ -29,6 +29,8 @@ export default async function getAll (endpoint, options) {
 			batchSize: json[`${endpoint}s`].length}))
 		.catch(err => console.error("Failed to retrieve required request count.", err));
 
+	if (count === 0) return [];
+
 	const batches = Math.ceil(count / batchSize);
 	const msRequestPadding = 1000; //I seem to get throttled even with all the precautions :(
 
