@@ -3,6 +3,11 @@
 	padding: 0;
 }
 
+:root {
+	--richBlue: rgb(72, 112, 241);
+	--paleBlue: rgb(141, 163, 238);
+}
+
 main {
 	background-color: #F9F9F9;
 	padding: 1rem;
@@ -35,9 +40,9 @@ main>h1>form>input {
 	padding: 0 .25rem;
 	margin: 0 -.25rem;
 } main>h1>form>input:hover {
-	border-color: rgb(141, 163, 238);
+	border-color: var(--paleBlue)
 } main>h1>form>input:focus {
-	border-color: rgb(72, 112, 241);
+	border-color: var(--richBlue);
 }
 
 .list-item {
@@ -47,13 +52,53 @@ main>h1>form>input {
 	margin-bottom: 1rem;
 }
 
-.fadeout {
-	animation: fadeout .5s ease;
+svg {
+	fill: none;
+	opacity: 0;
+	stroke-width: 10px;
+	stroke: var(--richBlue);
+	border-radius: 50%;
+	position: absolute;
+	left: calc(50% - 50px);
+	top: 25vh;
+	transition: opacity 1s;
+} svg>circle {
+	opacity: 0;
+} svg>circle:first-of-type {
+	animation: loaderInner 1.5s ease infinite;
+} svg>circle:nth-of-type(2) {
+	animation: loader 1.5s ease .25s infinite;
+} svg>circle:nth-of-type(3) {
+	animation: loader 1.5s ease .45s infinite;
+} svg.show {
+	opacity: 1;
 }
 
-@keyframes fadeout {
-	100% {
+@keyframes loaderInner {
+	0% {
+		r: 20%;
 		opacity: 0;
-		height: 0;
+	}
+	10% {
+		r: 0;
+		opacity: 1;
+		stroke-width: 5%;
+	}
+	60% {
+		r: 50%;
+		opacity: 0;
+		stroke-width: 0;
+	}
+}
+
+@keyframes loader {
+	0% {
+		r: 0;
+		opacity: 1;
+	}
+	60% {
+		r: 50%;
+		opacity: 0;
+		stroke-width: 0;
 	}
 }

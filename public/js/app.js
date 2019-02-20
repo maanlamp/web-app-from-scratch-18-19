@@ -48,17 +48,24 @@ async function renderArtists (event) {
 	clearArtists();
 
 	// Follow your own advice: use pure functions.
-	const names = (await getAll("artist", options))
-		.map(artist => artist.name)
-		.deduplicate();
+	const svg = document.querySelector("svg");
+	svg.classList.add("show");
 
-	names.forEach(name => render(
-		document.querySelector("#artists"),
-		`
+	const names = (await getAll("artist", options))
+	.map(artist => artist.name)
+	.deduplicate();
+
+	svg.classList.remove("show");
+
+	const html = names
+		.map(name => `
 			<div class="list-item">
 				${name}
-			</div>
-		`));
+			</div>`)
+		.join("");
+
+	render(document.querySelector("#artists"), html);
+
 	count.setInnerText(`Dat ${classifyNoun(names.length, "is", "zijn")} er ${names.length}!`);
 }
 
