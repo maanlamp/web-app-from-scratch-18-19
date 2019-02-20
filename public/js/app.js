@@ -52,8 +52,8 @@ async function renderArtists (event) {
 	svg.classList.add("show");
 
 	const names = (await getAll("artist", options))
-	.map(artist => artist.name)
-	.deduplicate();
+		.map(artist => artist.name)
+		.deduplicate();
 
 	svg.classList.remove("show");
 
