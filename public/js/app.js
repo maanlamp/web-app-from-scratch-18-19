@@ -36,37 +36,30 @@ function classifyNoun (count, single, plural) {
 async function renderArtists (event) {
 	event.preventDefault();
 	const input = document.querySelector("input");
+	if (input.value === "") return;
+
 	const count = document.querySelector("#count");
+	const svgLoader = document.querySelector("svg");
 	const options = {
 		fmt: "json",
 		query: input.value
 	};
 
-	if (input.value === "") return;
-
 	count.setInnerText("");
 	clearArtists();
+	svgLoader.classList.add("show");
 
-	// Follow your own advice: use pure functions.
-	const svg = document.querySelector("svg");
-	svg.classList.add("show");
-
-	const names = (await getAll("artist", options))
+	const HTMLArray = (await getAll("artist", options))
 		.map(artist => artist.name)
-		.deduplicate();
-
-	svg.classList.remove("show");
-
-	const html = names
+		// .deduplicate()
 		.map(name => `
 			<div class="list-item">
 				${name}
-			</div>`)
-		.join("");
+			</div>`);
 
-	render(document.querySelector("#artists"), html);
-
-	count.setInnerText(`Dat ${classifyNoun(names.length, "is", "zijn")} er ${names.length}!`);
+	render(document.querySelector("#artists"), HTMLArray.join(""));
+	count.setInnerText(`Dat ${classifyNoun(HTMLArray.length, "is", "zijn")} er ${HTMLArray.length}!`);
+	svgLoader.classList.remove("show");
 }
 
 document
