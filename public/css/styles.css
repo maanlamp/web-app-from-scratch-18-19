@@ -10,7 +10,7 @@
 
 main {
 	background-color: #F9F9F9;
-	padding: 1rem;
+	padding: 1rem 33vw;
 	min-height: calc(100vh - 2rem);
 }
 
