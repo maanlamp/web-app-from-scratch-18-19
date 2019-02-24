@@ -53,7 +53,8 @@ async function renderArtists (event) {
 	clearArtists();
 	svgLoader.classList.add("show");
 
-	const stream = new PromiseStream(await getAll("artist", options));
+	const {count: resultCount, promises} = await getAll("artist", options);
+	const stream = new PromiseStream(promises);
 	stream
 		.foreach(response => response.json())
 		.foreach(json => json["artists"])
@@ -64,14 +65,9 @@ async function renderArtists (event) {
 					<div class="list-item">
 						${name}
 					</div>`)))
-		.foreach(() => {
-			const num = artists.childElementCount;
-			count.setInnerText(`Dat ${classifyNoun(num, "is", "zijn")} er ${num}!`)})
 		.then(() => svgLoader.classList.remove("show"));
 
-	// render(document.querySelector("#artists"), HTMLArray.join(""));
-	// count.setInnerText(`Dat ${classifyNoun(HTMLArray.length, "is", "zijn")} er ${HTMLArray.length}!`);
-
+	count.setInnerText(`Dat ${classifyNoun(resultCount, "is", "zijn")} er ${resultCount}!`);
 }
 
 document

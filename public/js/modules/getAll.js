@@ -31,11 +31,14 @@ export default async function getAll (endpoint, options) {
 
 	console.log(`Retrieving ${count} items in ${batches} batches. Will take ~${msRequestPadding * batches / 1000}s.`);
 
-	return range(batches)
-		.map((_, i) => timeout(i * msRequestPadding)
-			.then(() => fetch(
-				createURL(
-					`${APIURL}/${endpoint}`,
-					Object.assign({offset: i * batchSize}, options)),
-				headers)));
+	return {
+		count,
+		promises: range(batches)
+			.map((_, i) => timeout(i * msRequestPadding)
+				.then(() => fetch(
+					createURL(
+						`${APIURL}/${endpoint}`,
+						Object.assign({offset: i * batchSize}, options)),
+					headers)))
+		};
 }
