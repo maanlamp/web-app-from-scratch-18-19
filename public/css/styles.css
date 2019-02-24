@@ -58,7 +58,7 @@ svg {
 	stroke-width: 10px;
 	stroke: var(--richBlue);
 	border-radius: 50%;
-	position: absolute;
+	position: fixed;
 	left: calc(50% - 50px);
 	top: 0;
 	transition: opacity .5s ease, top .75s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -71,7 +71,7 @@ svg {
 } svg>circle:nth-of-type(3) {
 	animation: loader 1.5s ease .45s infinite;
 } svg.show {
-	top: 25vh;
+	top: 32px;
 	opacity: 1;
 }
 

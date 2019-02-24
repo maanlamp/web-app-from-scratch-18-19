@@ -1,7 +1,10 @@
 import getAll from "./modules/getAll.js";
 import { html, render } from "./modules/render.js";
 import { extend, arrayDeduplicate, HTMLElementSetInnerText } from "./modules/utility.js";
+
+import PromiseStream from "./modules/PromiseStream.js";
 window.html = html;
+window.PromiseStream = PromiseStream;
 
 extend({
 	"Array": {
@@ -40,6 +43,7 @@ async function renderArtists (event) {
 
 	const count = document.querySelector("#count");
 	const svgLoader = document.querySelector("svg");
+	const artists = document.querySelector("#artists")
 	const options = {
 		fmt: "json",
 		query: input.value
@@ -49,19 +53,33 @@ async function renderArtists (event) {
 	clearArtists();
 	svgLoader.classList.add("show");
 
-	const HTMLArray = (await getAll("artist", options))
-		.map(artist => artist.name)
-		// .deduplicate()
-		.map(name => `
-			<div class="list-item">
-				${name}
-			</div>`);
+	const stream = new PromiseStream(await getAll("artist", options));
+	stream
+		.foreach(response => response.json())
+		.foreach(json => json["artists"])
+		.foreach(artists => artists.map(artist => artist.name))
+		.foreach(names => names
+			.forEach(name => artists
+				.insertAdjacentHTML("beforeend", `
+					<div class="list-item">
+						${name}
+					</div>`)))
+		.foreach(() => {
+			const num = artists.childElementCount;
+			count.setInnerText(`Dat ${classifyNoun(num, "is", "zijn")} er ${num}!`)})
+		.then(() => svgLoader.classList.remove("show"));
 
-	render(document.querySelector("#artists"), HTMLArray.join(""));
-	count.setInnerText(`Dat ${classifyNoun(HTMLArray.length, "is", "zijn")} er ${HTMLArray.length}!`);
-	svgLoader.classList.remove("show");
+	// render(document.querySelector("#artists"), HTMLArray.join(""));
+	// count.setInnerText(`Dat ${classifyNoun(HTMLArray.length, "is", "zijn")} er ${HTMLArray.length}!`);
+
 }
 
 document
 	.querySelector("form")
 	.addEventListener("submit", renderArtists);
+
+// .then(responses => responses
+// 	.mapAsync(res => res.json())
+// 	.then(jsons => jsons
+// 		.map(json => json[`${endpoint}s`])
+// 		.flat()))
